@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "ragie": {
+      "type": "http",
+      "url": "https://api.ragie.ai/mcp/${RAGIE_PARTITION}",
+      "headers": {
+        "Authorization": "Bearer ${RAGIE_API_KEY}"
+      }
+    }
+  }
+}

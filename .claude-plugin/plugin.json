@@ -1,0 +1,8 @@
+{
+  "name": "ragieai",
+  "description": "Ragie AI — managed RAG platform for document ingestion, search, and retrieval. Provides skills for integrating Ragie into applications and using the Ragie MCP server.",
+  "author": {
+    "name": "Ragie",
+    "url": "https://ragie.ai"
+  }
+}
