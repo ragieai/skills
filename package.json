@@ -2,7 +2,15 @@
   "name": "@ragieai/skills",
   "version": "0.1.0",
   "description": "Ragie skills for AI coding agents — document ingestion, retrieval, RAG patterns, and MCP integration",
-  "keywords": ["ragie", "rag", "retrieval", "ai", "skills", "claude", "cursor"],
+  "keywords": [
+    "ragie",
+    "rag",
+    "retrieval",
+    "ai",
+    "skills",
+    "claude",
+    "cursor"
+  ],
   "license": "MIT",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -23,11 +31,13 @@
   ],
   "scripts": {
     "build": "tsup src/index.ts --format esm,cjs --dts",
-    "dev": "tsup src/index.ts --format esm,cjs --dts --watch"
+    "dev": "tsup src/index.ts --format esm,cjs --dts --watch",
+    "test": "vitest run"
   },
   "devDependencies": {
     "@types/node": "^22.0.0",
     "tsup": "^8.0.0",
-    "typescript": "^5.0.0"
+    "typescript": "^5.0.0",
+    "vitest": "^4.1.4"
   }
 }
