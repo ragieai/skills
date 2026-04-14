@@ -6,13 +6,15 @@
 
 | Method | SDK call | Use when |
 |--------|----------|----------|
-| Binary file | `documents.create()` | Local files (PDF, DOCX, PPTX, images, …) |
-| Raw text/JSON | `documents.createRaw()` | Strings, scraped content, JSON data |
+| File upload | `documents.create()` | Uploading files — supports all file types (PDF, DOCX, PPTX, images, …) |
+| In-memory data | `documents.createRaw()` | Creating documents from in-memory text or JSON (scraped content, generated text, structured data) |
 | URL | `documents.createDocumentFromUrl()` | Web pages, public S3/GCS links |
 
-## From a Binary File
+**Prefer `documents.create()`** when uploading files, as it supports all file types including binary formats. **Prefer `createRaw()`** when your data is already in memory as a string or object — it is simpler and avoids unnecessary file/Blob wrapping, but only handles text and JSON.
 
-Use `documents.create()` with a `Blob`. **Do not use `createRaw()` for binary files** — `createRaw()` is text/JSON only.
+## From a File
+
+Use `documents.create()` with a `Blob`. This is the only method that supports all file types including binary formats (PDF, DOCX, images, etc.).
 
 ```typescript
 import { openAsBlob } from "fs";
@@ -25,7 +27,9 @@ const doc = await client.documents.create({
 });
 ```
 
-## From Raw Text or JSON
+## From In-Memory Data (Raw Text or JSON)
+
+**This is the preferred method when your data is already in memory** (e.g., scraped content, generated text, API responses). It accepts strings and plain objects — not binary data.
 
 ```typescript
 const doc = await client.documents.createRaw({
@@ -119,5 +123,5 @@ await client.documents.delete({ documentId: docId });
 ## Gotchas
 
 - Always check `status === "ready"` before querying — newly ingested documents are not immediately searchable.
-- `createRaw()` is for **text and JSON only** (`data: string | object`). Binary files (PDF, DOCX, etc.) must use `documents.create({ file: blob })`.
+- **Prefer `createRaw()` for in-memory data** — it's simpler when you already have a string or object. **Prefer `documents.create()` for file uploads** — it supports all file types. `createRaw()` only handles text and JSON (`data: string | object`); binary files (PDF, DOCX, etc.) must use `documents.create({ file: blob })`.
 - Supported file types include PDF, DOCX, PPTX, TXT, MD, HTML, and more. Check the dashboard for the full list.

@@ -20,19 +20,20 @@ import { openAsBlob } from "fs";
 
 const client = new Ragie({ auth: process.env.RAGIE_API_KEY });
 
-// From a file (PDF, DOCX, TXT, MD, …)
+// From a file (supports all file types: PDF, DOCX, images, …)
 const doc = await client.documents.create({
   file: await openAsBlob("report.pdf"),
   name: "report.pdf",
 });
 
-// From raw text or JSON
+// From in-memory data (preferred when data is already a string/object)
 const doc2 = await client.documents.createRaw({
   data: "Your text content here...",
   name: "my-note",
 });
 
 console.log(doc.id, doc.status); // status: "pending" → "ready"
+// Use createRaw() for in-memory text/JSON; use create() for file uploads (all file types supported)
 ```
 
 See `ingestion.md` for URL ingestion, polling, webhooks, and bulk patterns.

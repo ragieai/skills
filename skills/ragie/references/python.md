@@ -19,13 +19,15 @@ The Python SDK has three distinct methods depending on the source. Using the wro
 
 | Source | Method | Request class |
 |--------|--------|---------------|
-| Binary file (PDF, DOCX, etc.) | `documents.create()` | `ragie.CreateDocumentParams` + `ragie.File` |
+| File upload (all file types) | `documents.create()` | `ragie.CreateDocumentParams` + `ragie.File` |
+| In-memory data (text/JSON) | `documents.create_raw()` | `ragie.CreateDocumentRawParams` |
 | URL | `documents.create_document_from_url()` | `ragie.CreateDocumentFromURLParams` |
-| Raw text or JSON | `documents.create_raw()` | `ragie.CreateDocumentRawParams` |
 
-### From a binary file
+**Prefer `documents.create()`** when uploading files from disk, as it supports all file types including binary formats. **Prefer `create_raw()`** when your data is already in memory as a string or dict — it is simpler and avoids unnecessary file wrapping, but only handles text and JSON.
 
-Use `documents.create()` with `ragie.File`. **Do not use `create_raw()` for binary files** — `create_raw()` is for text/JSON only.
+### From a file
+
+Use `documents.create()` with `ragie.File`. This is the only method that supports all file types including binary formats (PDF, DOCX, images, etc.).
 
 ```python
 import ragie
@@ -60,9 +62,9 @@ doc = client.documents.create_document_from_url(
 )
 ```
 
-### From raw text or JSON
+### From in-memory data (raw text or JSON)
 
-`create_raw()` accepts a `data` field which is a string or dict — not bytes.
+**Preferred when your data is already in memory** (e.g., scraped content, generated text, API responses). Accepts strings and dicts — not bytes.
 
 ```python
 import ragie
@@ -222,7 +224,7 @@ def stream_answer(question: str) -> None:
 
 - **`ragie.File`, not `ragie.FileUpload`** — the file wrapper class is `ragie.File`. `FileUpload` does not exist.
 - **`ragie.ListDocumentsRequest`, not `ragie.ListDocumentsParams`** — always use the `Request` suffix for list operations.
-- **`create_raw()` is for text/JSON, not binary** — pass a `data` string or dict. For binary files (PDF, DOCX, etc.) use `create()` with `ragie.File`.
+- **Prefer `create_raw()` for in-memory data** — it's simpler when you already have a string or dict. **Prefer `create()` for file uploads** — it supports all file types. `create_raw()` only handles text and JSON; binary files (PDF, DOCX, etc.) must use `create()` with `ragie.File`.
 - **`documents.list()` response requires `.result.documents`** — `.result` is a `DocumentList` object, not a list. Access `.result.documents` to get the actual `List[Document]`. Iterating `.result` directly yields Pydantic field tuples, not documents.
 - **`documents.get()` returns `DocumentGet`, not `Document`** — these are distinct types. Import `from ragie.models import DocumentGet` and annotate accordingly. Do not assign a `DocumentGet` to a variable typed as `Document`.
 - **Pagination via `.next()`** — call `page.next()` to get the next `ListDocumentsResponse`, or `None` if there are no more pages.
