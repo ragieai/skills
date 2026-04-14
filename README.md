@@ -22,16 +22,12 @@ For programmatic access to skill and reference content:
 npm install @ragieai/skills
 ```
 
-### Via Claude Code plugin
+### Local development
 
-Add to `~/.claude/settings.json` for permanent global access:
+Symlink the skill directory directly into Claude Code's skills folder so edits are reflected immediately:
 
-```json
-{
-  "enabledPlugins": {
-    "ragieai@/path/to/skills": true
-  }
-}
+```bash
+ln -s /path/to/ragieai/skills/skills/ragie ~/.claude/skills/ragie
 ```
 
 ## What's Included
@@ -65,7 +61,7 @@ export RAGIE_API_KEY=ragie_...
 export RAGIE_PARTITION=your-partition
 ```
 
-The plugin's `.mcp.json` handles the rest. See `references/mcp.md` for multi-partition setup.
+The plugin's `.mcp.json` handles the rest. See `mcp.md` for multi-partition setup.
 
 ## Programmatic API
 
