@@ -1,8 +1,6 @@
 import { readFileSync } from "fs";
-import { join, dirname } from "path";
-import { fileURLToPath } from "url";
+import { join } from "path";
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
 const root = join(__dirname, "..");
 
 const REFERENCES = [
@@ -24,7 +22,7 @@ export type SkillName = (typeof SKILLS)[number];
 
 /** Returns the absolute path to a reference file. */
 export function getReferencePath(name: ReferenceName): string {
-  return join(root, "references", `${name}.md`);
+  return join(root, "skills", "ragie", "references", `${name}.md`);
 }
 
 /** Returns the absolute path to a skill's SKILL.md. */
