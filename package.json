@@ -1,6 +1,6 @@
 {
   "name": "@ragieai/skills",
-  "version": "0.1.0",
+  "version": "0.0.0",
   "description": "Ragie skills for AI coding agents — document ingestion, retrieval, RAG patterns, and MCP integration",
   "keywords": [
     "ragie",
