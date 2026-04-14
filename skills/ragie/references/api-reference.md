@@ -41,12 +41,13 @@ metadata      <json>     (optional)
 GET /documents/{document_id}
 ```
 
-Response fields: `id`, `name`, `status` (`pending` | `partitioning` | `ready` | `failed`), `metadata`, `partition`, `created_at`, `updated_at`.
+Response fields: `id`, `name`, `status` (`pending` | `partitioning` | `partitioned` | `refined` | `chunked` | `indexed` | `summary_indexed` | `keyword_indexed` | `ready` | `failed`), `metadata`, `partition`, `created_at`, `updated_at`.
 
 ### List documents
 
 ```
-GET /documents?partition=<p>&page_size=<n>&cursor=<c>
+GET /documents?page_size=<n>&cursor=<c>&filter=<json>
+Partition: <partition>    ← partition is a header, not a query param
 ```
 
 Returns `{ "results": [...], "pagination": { "next_cursor": "..." } }`.
@@ -54,13 +55,15 @@ Returns `{ "results": [...], "pagination": { "next_cursor": "..." } }`.
 ### Update document metadata
 
 ```
-PATCH /documents/{document_id}
+PATCH /documents/{document_id}/metadata
 Content-Type: application/json
 
 {
   "metadata": { "key": "value" }
 }
 ```
+
+Performs a partial update. Keys set to `null` are deleted.
 
 ### Delete document
 
@@ -80,12 +83,12 @@ Content-Type: application/json
 
 {
   "query": "What are the rate limits?",
-  "top_k": 8,               // default 8, max 100
-  "rerank": true,           // cross-encoder rerank (recommended)
-  "partition": "tenant-id", // scope to partition (optional)
-  "filter": {               // metadata equality filter (optional)
-    "product": "api"
-  }
+  "top_k": 8,                       // default 8
+  "rerank": true,                   // cross-encoder rerank (recommended)
+  "partition": "tenant-id",         // scope to partition (optional)
+  "filter": { "product": "api" },   // metadata filter (optional)
+  "max_chunks_per_document": 2,     // limit chunks per source doc (optional)
+  "recency_bias": false             // favor recently ingested docs (optional)
 }
 ```
 
@@ -95,11 +98,14 @@ Response:
 {
   "scored_chunks": [
     {
+      "id": "chunk_...",
+      "index": 0,
       "text": "...",
       "score": 0.92,
       "document_id": "doc_...",
       "document_name": "API Docs",
-      "document_metadata": {}
+      "document_metadata": {},
+      "metadata": {}
     }
   ]
 }
@@ -115,6 +121,23 @@ Response:
 GET /partitions
 ```
 
+### Create partition
+
+```
+POST /partitions
+Content-Type: application/json
+
+{ "name": "tenant-42", "description": "optional" }
+```
+
+### Get partition (usage metrics)
+
+```
+GET /partitions/{partition_id}
+```
+
+Returns document count, pages processed/hosted monthly/total.
+
 ### Delete partition (and all its documents)
 
 ```
@@ -123,20 +146,18 @@ DELETE /partitions/{partition_id}
 
 ---
 
-## Webhooks / Ready Hook
+## Webhooks
 
-Pass `metadata.ready_hook` on ingest to receive a POST when processing completes:
+Register a webhook endpoint to receive document status change events:
 
-```json
-{
-  "url": "https://example.com/doc",
-  "metadata": {
-    "ready_hook": "https://your-server.com/ragie-webhook"
-  }
-}
+```
+POST /webhook_endpoints
+Content-Type: application/json
+
+{ "url": "https://your-server.com/ragie-webhook" }
 ```
 
-Ragie will POST to that URL with the document object when `status` transitions to `ready` or `failed`.
+Ragie sends `document_status_updated` events when documents reach `indexed`, `keyword_indexed`, `ready`, or `failed` states.
 
 ---
 
@@ -144,8 +165,8 @@ Ragie will POST to that URL with the document object when `status` transitions t
 
 | HTTP | Meaning |
 |------|---------|
-| 400 | Bad request — check request body |
 | 401 | Invalid or missing API key |
+| 402 | Usage limit exceeded |
 | 404 | Document / partition not found |
 | 422 | Validation error — response body has `detail` array |
 | 429 | Rate limited — retry with exponential back-off |
@@ -179,4 +200,4 @@ client = Ragie(auth=os.environ["RAGIE_API_KEY"])
 
 All SDK methods mirror the REST endpoints and return typed response objects. The SDKs handle pagination, retries, and multipart uploads automatically.
 
-Note: The TypeScript SDK uses camelCase (`createFromUrl`, `topK`, `scoredChunks`). The REST API and Python SDK use snake_case (`create_from_url`, `top_k`, `scored_chunks`).
+Note: The TypeScript SDK uses camelCase (`createDocumentFromUrl`, `topK`, `scoredChunks`, `patchMetadata`). The REST API and Python SDK use snake_case (`create_document_from_url`, `top_k`, `scored_chunks`, `patch_metadata`).

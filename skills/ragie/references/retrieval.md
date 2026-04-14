@@ -18,13 +18,15 @@ for (const chunk of results.scoredChunks) {
 ```typescript
 const results = await client.retrievals.retrieve({
   query: "your question",
-  topK: 8,               // number of chunks returned (default 8, max 100)
-  rerank: true,          // cross-encoder rerank — improves quality significantly
-  partition: "tenant-42", // scope to a partition (optional)
-  filter: {              // metadata equality filter (optional)
+  topK: 8,                      // number of chunks returned (default 8)
+  rerank: true,                 // cross-encoder rerank — improves quality significantly
+  partition: "tenant-42",       // scope to a partition (optional)
+  filter: {                     // metadata filter (optional) — see metadata-filtering.md
     product: "api",
     version: "v3",
   },
+  maxChunksPerDocument: 2,      // limit chunks per source doc — improves source diversity (optional)
+  recencyBias: false,           // favor more recently ingested documents (default false) (optional)
 });
 ```
 
@@ -39,6 +41,9 @@ Each item in `scoredChunks` has:
 | `documentId` | ID of the source document |
 | `documentName` | Display name of the source document |
 | `documentMetadata` | Metadata attached to the source document |
+| `id` | The chunk's own ID |
+| `index` | The chunk's position index within the document |
+| `metadata` | Chunk-level metadata (distinct from `documentMetadata`) |
 
 ## Hybrid Search
 
@@ -67,6 +72,6 @@ Too many chunks dilutes the context and increases token cost. Too few risks miss
 ## Gotchas
 
 - `rerank` adds ~100–300ms latency but meaningfully improves result quality. Use it by default.
-- Metadata `filter` uses equality matching — all specified keys must match for a chunk to be included.
+- Metadata `filter` supports rich operators (`$eq`, `$ne`, `$gt`, `$gte`, `$lt`, `$lte`, `$in`, `$nin`, `$and`, `$or`). Simple object shorthand `{ key: value }` is equality. See `metadata-filtering.md`.
 - Scores are not normalized across queries; use them for ranking within a single result set, not across queries.
 - Query documents only after `status === "ready"`. See `ingestion.md`.

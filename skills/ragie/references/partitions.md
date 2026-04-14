@@ -8,7 +8,7 @@ Partitions are logical namespaces within a single Ragie account. Use them to iso
 
 ```typescript
 // Ingest into a partition
-await client.documents.createFromUrl({
+await client.documents.createDocumentFromUrl({
   url: "https://example.com/doc",
   partition: "tenant-42",
 });
@@ -24,7 +24,7 @@ const results = await client.retrievals.retrieve({
 
 ```typescript
 function ingestForTenant(client: Ragie, tenantId: string, url: string) {
-  return client.documents.createFromUrl({
+  return client.documents.createDocumentFromUrl({
     url,
     partition: `tenant-${tenantId}`,
   });
@@ -42,11 +42,28 @@ function retrieveForTenant(client: Ragie, tenantId: string, query: string) {
 ## Partition Management
 
 ```typescript
-// List all partitions
-const partitions = await client.partitions.list();
+// List all partitions (returns a PageIterator — async iterable)
+for await (const page of client.partitions.list()) {
+  for (const partition of page.result.partitions) {
+    console.log(partition.id, partition.name);
+  }
+}
+
+// Create a partition explicitly
+await client.partitions.create({ name: "tenant-42", description: "optional" });
+// Note: partitions are also created implicitly on first document ingest
+
+// Get partition details and usage metrics (document count, pages processed)
+const detail = await client.partitions.get({ partitionId: "tenant-42" });
+
+// Set page limits (triggers webhook when limit is exceeded)
+await client.partitions.setLimits({
+  partitionId: "tenant-42",
+  partitionLimitParams: { pagesHostedLimitMonthly: 1000 },
+});
 
 // Delete a partition and all its documents
-await client.partitions.delete("tenant-42");
+await client.partitions.delete({ partitionId: "tenant-42" });
 ```
 
 ## Partitions vs Metadata Filters

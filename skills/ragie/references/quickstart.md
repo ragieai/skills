@@ -16,15 +16,26 @@ npm install ragie
 
 ```typescript
 import { Ragie } from "ragie";
+import { openAsBlob } from "fs";
 
 const client = new Ragie({ auth: process.env.RAGIE_API_KEY });
 
-const doc = await client.documents.createFromUrl({
-  url: "https://example.com/article",
-  name: "article",
+// From a file (PDF, DOCX, TXT, MD, …)
+const doc = await client.documents.create({
+  file: await openAsBlob("report.pdf"),
+  name: "report.pdf",
 });
+
+// From raw text or JSON
+const doc2 = await client.documents.createRaw({
+  data: "Your text content here...",
+  name: "my-note",
+});
+
 console.log(doc.id, doc.status); // status: "pending" → "ready"
 ```
+
+See `ingestion.md` for URL ingestion, polling, webhooks, and bulk patterns.
 
 ## Retrieve (Search)
 
